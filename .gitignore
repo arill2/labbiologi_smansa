@@ -1,5 +1,6 @@
 node_modules/
 .npm
 database/.secret_key
+.env
 .DS_Store
 *.log
