@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Inventarisasi Lab Biologi - SMAN 1 Pinrang</title>
+  <meta name="description" content="Sistem Informasi Manajemen Inventarisasi dan Peminjaman Peralatan Laboratorium Biologi SMA Negeri 1 Pinrang.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20width=%22100%22%20height=%22100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%230d9488%22/><text y=%2255%22 font-size=%2245%22 x=%2250%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>BIO</text></svg>">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-view" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 2v7.31M14 2v7.31M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0"/>
+            <circle cx="12" cy="15" r="2"/>
+          </svg>
+        </div>
+        <h2>Lab Biologi SMANSA</h2>
+        <p>SMA Negeri 1 Pinrang &bull; Tahun 2026/2027</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="login-username">Username Admin</label>
+          <input type="text" id="login-username" class="form-input" placeholder="Masukkan username" required autocomplete="username">
+        </div>
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Masukkan password" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+          Masuk ke Sistem
+        </button>
+      </form>
+
+      <div style="margin-top: 20px; padding: 12px; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+        <strong>Akun Default Admin:</strong><br>
+        Username: <code>admin</code> &bull; Password: <code>adminlab123</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP WRAPPER (AUTHENTICATED) -->
+  <div id="main-app" style="display: none;">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M10 2v7.31M14 2v7.31M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0"/>
+            <circle cx="12" cy="15" r="2"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Lab Biologi</h1>
+          <p>SMAN 1 PINRANG</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Menu Utama</div>
+        
+        <button class="nav-item active" data-tab="tab-home" id="nav-home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span>Dashboard & Log</span>
+        </button>
+
+        <button class="nav-item" data-tab="tab-inventaris" id="nav-inventaris">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          <span>Inventaris Barang</span>
+          <span class="nav-badge" id="badge-total-barang">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="tab-peminjaman" id="nav-peminjaman">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <span>Peminjaman Alat</span>
+          <span class="nav-badge" id="badge-total-pinjam">0</span>
+        </button>
+
+        <div class="nav-section-title">Audit & Pengaturan</div>
+
+        <button class="nav-item" data-tab="tab-logs" id="nav-logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Riwayat Log Lengkap</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="sidebar-user-initials">JA</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-user-name">Juni Aswati, S.Si</div>
+            <div class="user-role" id="sidebar-user-role">Laboran Lab Biologi</div>
+          </div>
+          <button class="btn-icon" id="btn-logout" title="Keluar">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-title">
+          <h2 id="page-heading">Dashboard & Riwayat Aktivitas</h2>
+        </div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="theme-toggle" title="Ganti Tema">
+            <svg id="theme-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <span id="theme-text">Mode Terang</span>
+          </button>
+          
+          <button class="btn btn-secondary btn-sm" id="btn-open-password-modal" title="Ubah Password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Password</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <main class="page-content">
+
+        <!-- ============================================ -->
+        <!-- TAB 1: DASHBOARD & LOG TERPUSAT -->
+        <!-- ============================================ -->
+        <section id="tab-home" class="tab-view active">
+          <!-- METRIC STATS -->
+          <div class="metrics-grid">
+            <div class="stat-card">
+              <div class="stat-icon emerald">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+              </div>
+              <div class="stat-details">
+                <span class="stat-label">Total Jenis Barang</span>
+                <span class="stat-value" id="stat-total-jenis">0</span>
+                <span class="stat-subtext">Item terdaftar di lab</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon indigo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="stat-details">
+                <span class="stat-label">Stok Tersedia</span>
+                <span class="stat-value" id="stat-stok-tersedia">0</span>
+                <span class="stat-subtext">Siap untuk praktikum</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="stat-details">
+                <span class="stat-label">Sedang Dipinjam</span>
+                <span class="stat-value" id="stat-total-dipinjam">0</span>
+                <span class="stat-subtext">Dalam peminjaman aktif</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon rose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="stat-details">
+                <span class="stat-label">Kondisi Rusak</span>
+                <span class="stat-value" id="stat-stok-rusak">0</span>
+                <span class="stat-subtext">Perlu perbaikan/ganti</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOG RIWAYAT AKTIVITAS TERPUSAT -->
+          <div class="card-section">
+            <div class="section-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 14 14"/>
+                </svg>
+                <h3>Log Riwayat Aktivitas Laboratorium</h3>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-export-logs">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Export Log</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Log Home -->
+            <div class="filter-bar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="filter-log-search" class="search-input" placeholder="Cari aktivitas, barang, atau nama peminjam...">
+              </div>
+
+              <select id="filter-log-jenis" class="select-control">
+                <option value="semua">Semua Aktivitas</option>
+                <option value="peminjaman">Peminjaman</option>
+                <option value="pengembalian">Pengembalian</option>
+                <option value="tambah_barang">Tambah Barang</option>
+                <option value="edit_barang">Edit Barang</option>
+                <option value="hapus_barang">Hapus Barang</option>
+                <option value="import_csv">Import CSV</option>
+              </select>
+            </div>
+
+            <!-- List Timeline -->
+            <div id="dashboard-log-list" class="log-timeline">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- TAB 2: INVENTARIS BARANG -->
+        <!-- ============================================ -->
+        <section id="tab-inventaris" class="tab-view">
+          <div class="card-section">
+            <div class="section-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                <h3>Daftar Inventaris Peralatan & Prasarana</h3>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-secondary" id="btn-export-inventaris">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Export CSV</span>
+                </button>
+                <button class="btn btn-secondary" id="btn-open-import-modal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Import CSV</span>
+                </button>
+                <button class="btn btn-primary" id="btn-open-add-barang">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Tambah Barang Baru</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="filter-barang-search" class="search-input" placeholder="Cari nama peralatan, kode, spesifikasi, atau lokasi...">
+              </div>
+
+              <select id="filter-barang-kategori" class="select-control">
+                <option value="semua">Semua Kategori</option>
+              </select>
+
+              <select id="filter-barang-kondisi" class="select-control">
+                <option value="semua">Semua Kondisi</option>
+                <option value="Baik">Baik</option>
+                <option value="Sebagian Rusak">Sebagian Rusak</option>
+                <option value="Rusak">Rusak</option>
+              </select>
+
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                <input type="checkbox" id="filter-barang-stok-menipis">
+                <span>Stok Menipis (&le; 2)</span>
+              </label>
+            </div>
+
+            <!-- Table Barang -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Nama Peralatan</th>
+                    <th>Spesifikasi</th>
+                    <th>Kategori</th>
+                    <th>Stok Tersedia</th>
+                    <th>Stok Total</th>
+                    <th>Kondisi</th>
+                    <th>Lokasi</th>
+                    <th style="text-align: right;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-barang-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+            <div id="barang-empty-state" style="display: none; padding: 40px; text-align: center; color: var(--text-muted);">
+              Tidak ada barang yang sesuai dengan filter pencarian.
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- TAB 3: PEMINJAMAN BARANG -->
+        <!-- ============================================ -->
+        <section id="tab-peminjaman" class="tab-view">
+          <div class="card-section">
+            <div class="section-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <h3>Peminjaman & Pengembalian Alat Lab</h3>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-success" id="btn-open-kembali-modal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  <span>Alat Dikembalikan</span>
+                </button>
+                <button class="btn btn-primary" id="btn-open-pinjam-modal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Peminjaman Baru</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sub Navigation Filter -->
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+              <button class="btn btn-sm btn-primary pinjam-subtab-btn" data-status="dipinjam" id="subtab-pinjam-aktif">
+                Peminjaman Aktif (Sedang Dipinjam)
+              </button>
+              <button class="btn btn-sm btn-secondary pinjam-subtab-btn" data-status="dikembalikan" id="subtab-pinjam-riwayat">
+                Riwayat Selesai (Dikembalikan)
+              </button>
+              <button class="btn btn-sm btn-secondary pinjam-subtab-btn" data-status="semua" id="subtab-pinjam-semua">
+                Semua Catatan
+              </button>
+            </div>
+
+            <div class="filter-bar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="filter-pinjam-search" class="search-input" placeholder="Cari nama peminjam, nama alat, formulir, atau keperluan praktikum...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No. Formulir</th>
+                    <th>Nama Peminjam</th>
+                    <th>Kelas / Jabatan</th>
+                    <th>Alat Laboratorium</th>
+                    <th>Jumlah</th>
+                    <th>Tgl Pinjam</th>
+                    <th>Batas Kembali</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-peminjaman-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+            <div id="pinjam-empty-state" style="display: none; padding: 40px; text-align: center; color: var(--text-muted);">
+              Tidak ada data peminjaman yang ditemukan.
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- TAB 4: LOG RIWAYAT LENGKAP -->
+        <!-- ============================================ -->
+        <section id="tab-logs" class="tab-view">
+          <div class="card-section">
+            <div class="section-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <h3>Arsip Lengkap Log Riwayat Sistem</h3>
+              </div>
+            </div>
+
+            <div class="filter-bar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="audit-log-search" class="search-input" placeholder="Cari aktivitas...">
+              </div>
+
+              <select id="audit-log-jenis" class="select-control">
+                <option value="semua">Semua Jenis Aksi</option>
+                <option value="peminjaman">Peminjaman</option>
+                <option value="pengembalian">Pengembalian</option>
+                <option value="tambah_barang">Tambah Barang</option>
+                <option value="edit_barang">Edit Barang</option>
+                <option value="hapus_barang">Hapus Barang</option>
+                <option value="import_csv">Import CSV</option>
+              </select>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Dari:</span>
+                <input type="date" id="audit-log-start" class="form-input" style="padding: 8px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Sampai:</span>
+                <input type="date" id="audit-log-end" class="form-input" style="padding: 8px;">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Waktu (Timestamp)</th>
+                    <th>Jenis Aktivitas</th>
+                    <th>Deskripsi Aktivitas</th>
+                    <th>Petugas / Admin</th>
+                  </tr>
+                </thead>
+                <tbody id="table-audit-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+              <span id="audit-pagination-info" style="font-size: 0.85rem; color: var(--text-muted);">Menampilkan halaman 1</span>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" id="btn-audit-prev">Sebelumnya</button>
+                <button class="btn btn-secondary btn-sm" id="btn-audit-next">Selanjutnya</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODALS -->
+  <!-- ============================================ -->
+
+  <!-- MODAL: TAMBAH / EDIT BARANG -->
+  <div class="modal-backdrop" id="modal-barang">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-barang-title">Tambah Barang Inventaris</h3>
+        <button class="btn-icon" data-close-modal>✕</button>
+      </div>
+      <form id="form-barang">
+        <div class="modal-body">
+          <input type="hidden" id="barang-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="barang-kode">Kode Barang (Opsional)</label>
+              <input type="text" id="barang-kode" class="form-input" placeholder="contoh: KGE 11/250">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="barang-nama">Nama Peralatan *</label>
+              <input type="text" id="barang-nama" class="form-input" placeholder="contoh: Gelas Kimia" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="barang-spesifikasi">Spesifikasi / Ukuran</label>
+              <input type="text" id="barang-spesifikasi" class="form-input" placeholder="contoh: 250 ml, Kaca pyrex">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="barang-kategori">Kategori *</label>
+              <select id="barang-kategori" class="form-select" required>
+                <option value="Alat Bahan Kaca">Alat Bahan Kaca</option>
+                <option value="Alat Plastik, Kayu & Besi">Alat Plastik, Kayu & Besi</option>
+                <option value="Media Pembelajaran & Preparat">Media Pembelajaran & Preparat</option>
+                <option value="Aset Prasarana">Aset Prasarana</option>
+                <option value="Bahan Kimia & Biakan">Bahan Kimia & Biakan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="barang-subkategori">Sub Kategori</label>
+              <input type="text" id="barang-subkategori" class="form-input" placeholder="contoh: Berskala / Tidak Berskala">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="barang-satuan">Satuan</label>
+              <input type="text" id="barang-satuan" class="form-input" placeholder="contoh: Buah, Set, Dos, Lembar" value="Buah">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="barang-stok-total">Stok Total (Kondisi Baik) *</label>
+              <input type="number" id="barang-stok-total" class="form-input" min="0" value="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="barang-stok-rusak">Stok Rusak</label>
+              <input type="number" id="barang-stok-rusak" class="form-input" min="0" value="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="barang-kondisi">Kondisi Barang</label>
+              <select id="barang-kondisi" class="form-select">
+                <option value="Baik">Baik</option>
+                <option value="Sebagian Rusak">Sebagian Rusak</option>
+                <option value="Rusak">Rusak</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="barang-lokasi">Lokasi Penyimpanan</label>
+              <input type="text" id="barang-lokasi" class="form-input" placeholder="contoh: Lemari 3 / 1, Ruang Lab" value="Lemari 3 / 1">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="barang-sumber">Sumber Dana / Pengadaan</label>
+              <input type="text" id="barang-sumber" class="form-input" placeholder="contoh: A, D, BOMM, BOS">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="barang-keterangan">Keterangan Tambahan</label>
+              <textarea id="barang-keterangan" class="form-textarea" rows="2" placeholder="Catatan kondisi atau nomor reparasi..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-barang">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PEMINJAMAN BARU -->
+  <div class="modal-backdrop" id="modal-pinjam">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Formulir Peminjaman Alat Lab Biologi</h3>
+        <button class="btn-icon" data-close-modal>✕</button>
+      </div>
+      <form id="form-pinjam">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label class="form-label" for="pinjam-barang-id">Pilih Alat Laboratorium *</label>
+              <select id="pinjam-barang-id" class="form-select" required>
+                <option value="">-- Pilih Alat Lab --</option>
+              </select>
+              <small id="pinjam-stok-indicator" style="font-size: 0.78rem; color: var(--primary); margin-top: 4px; display: block; font-weight: 600;"></small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pinjam-jumlah">Jumlah Pinjam *</label>
+              <input type="number" id="pinjam-jumlah" class="form-input" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pinjam-nama">Nama Peminjam (Guru / Siswa) *</label>
+              <input type="text" id="pinjam-nama" class="form-input" placeholder="contoh: HJ. Haslinda, S.Pd." required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pinjam-kelas">Kelas / Jabatan</label>
+              <input type="text" id="pinjam-kelas" class="form-input" placeholder="contoh: Kelas XI MIPA 1 / Guru Biologi">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pinjam-tgl-pinjam">Tanggal Peminjaman *</label>
+              <input type="date" id="pinjam-tgl-pinjam" class="form-input" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="pinjam-tgl-kembali">Rencana Tanggal Pengembalian</label>
+              <input type="date" id="pinjam-tgl-kembali" class="form-input">
+              <small style="color: var(--text-subtle); font-size: 0.75rem;">Sistem akan memberi indikator terlambat bila melewati tanggal ini.</small>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="pinjam-keperluan">Keperluan & Durasi Peminjaman</label>
+              <input type="text" id="pinjam-keperluan" class="form-input" placeholder="contoh: Praktikum Uji Makanan, Satu Hari">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="pinjam-keterangan">Keterangan Tambahan</label>
+              <textarea id="pinjam-keterangan" class="form-textarea" rows="2" placeholder="Catatan meja praktikum atau kondisi saat diambil..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn-primary">Konfirmasi Peminjaman</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PENGEMBALIAN BARANG -->
+  <div class="modal-backdrop" id="modal-kembalikan">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Konfirmasi Pengembalian Alat</h3>
+        <button class="btn-icon" data-close-modal>✕</button>
+      </div>
+      <form id="form-kembalikan">
+        <input type="hidden" id="kembali-peminjaman-id">
+        <div class="modal-body">
+          <!-- Pilihan Peminjaman Aktif (jika dibuka dari tombol atas) -->
+          <div class="form-group" id="kembali-select-group" style="margin-bottom: 16px; display: none;">
+            <label class="form-label" for="kembali-select-peminjaman">Pilih Transaksi Peminjaman Aktif *</label>
+            <select id="kembali-select-peminjaman" class="form-select">
+              <option value="">-- Pilih Transaksi Peminjaman --</option>
+            </select>
+          </div>
+
+          <div id="kembali-info-box" style="background: var(--bg-muted); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Peminjam</div>
+            <div id="kembali-info-peminjam" style="font-weight: 700; color: var(--text-main); font-size: 1rem;">-</div>
+            <div id="kembali-info-alat" style="font-size: 0.88rem; color: var(--primary); margin-top: 4px;">-</div>
+            <div id="kembali-info-jadwal" style="font-size: 0.78rem; color: var(--text-subtle); margin-top: 4px;"></div>
+          </div>
+
+          <!-- Banner Pengembalian Lebih Awal -->
+          <div id="kembali-early-alert" style="display: none; background: var(--primary-light); border: 1px solid var(--primary); padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 0.84rem; color: var(--primary-hover); display: flex; align-items: center; gap: 10px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 14 14"/>
+            </svg>
+            <span id="kembali-early-text"><strong>Pengembalian Lebih Awal:</strong> Barang dikembalikan sebelum batas waktu rencana pengembalian.</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="kembali-jumlah">Jumlah yang Dikembalikan *</label>
+              <input type="number" id="kembali-jumlah" class="form-input" min="1" required>
+              <small id="kembali-max-hint" style="color: var(--text-subtle); font-size: 0.75rem;"></small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="kembali-tgl">Tanggal Pengembalian *</label>
+              <input type="date" id="kembali-tgl" class="form-input" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="kembali-kondisi">Kondisi Alat Saat Kembali</label>
+              <select id="kembali-kondisi" class="form-select">
+                <option value="Baik">Baik & Lengkap</option>
+                <option value="Rusak">Rusak / Perlu Reparasi</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label" for="kembali-catatan">Catatan Laboran</label>
+              <textarea id="kembali-catatan" class="form-textarea" rows="2" placeholder="Catatan kebersihan atau kondisi pengembalian..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn-success">Simpan Pengembalian</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: IMPORT CSV WITH PREVIEW -->
+  <div class="modal-backdrop" id="modal-import">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3>Import Inventaris via Berkas CSV</h3>
+        <button class="btn-icon" data-close-modal>✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="import-dropzone" class="dropzone">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 4px;">Pilih atau Tarik Berkas CSV ke Sini</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Mendukung format resmi SMANSA Pinrang atau format standar CSV inventaris</p>
+          <input type="file" id="import-csv-file" accept=".csv" style="display: none;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('import-csv-file').click()">
+            Pilih File CSV
+          </button>
+        </div>
+
+        <div id="import-preview-section" style="display: none; margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700;">Preview Data Terdeteksi (<span id="import-valid-count">0</span> Barang)</h4>
+            <span class="badge badge-success" id="import-status-badge">Siap Dimasukkan</span>
+          </div>
+
+          <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kode</th>
+                  <th>Nama Barang</th>
+                  <th>Spesifikasi</th>
+                  <th>Kategori</th>
+                  <th>Stok</th>
+                  <th>Kondisi</th>
+                  <th>Lokasi</th>
+                </tr>
+              </thead>
+              <tbody id="import-preview-table-body">
+                <!-- populated by js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Tutup</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-import" style="display: none;">
+          Konfirmasi & Masukkan ke Database
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GANTI PASSWORD -->
+  <div class="modal-backdrop" id="modal-password">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>Ubah Password Admin</h3>
+        <button class="btn-icon" data-close-modal>✕</button>
+      </div>
+      <form id="form-change-password">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" for="pwd-current">Password Saat Ini *</label>
+            <input type="password" id="pwd-current" class="form-input" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" for="pwd-new">Password Baru * (Min 6 Karakter)</label>
+            <input type="password" id="pwd-new" class="form-input" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pwd-confirm">Konfirmasi Password Baru *</label>
+            <input type="password" id="pwd-confirm" class="form-input" minlength="6" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn-primary">Perbarui Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

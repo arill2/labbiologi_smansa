@@ -1,0 +1,25 @@
+{
+  "name": "lab-biologi-smansa-pinrang",
+  "version": "1.0.0",
+  "description": "Sistem Inventarisasi Lab Biologi SMANSA Pinrang",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js"
+  },
+  "keywords": [
+    "inventaris",
+    "laboratorium",
+    "biologi",
+    "smansa-pinrang"
+  ],
+  "author": "SMANSA Pinrang",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

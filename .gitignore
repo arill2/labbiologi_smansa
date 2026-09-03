@@ -1,0 +1,5 @@
+node_modules/
+.npm
+database/.secret_key
+.DS_Store
+*.log
