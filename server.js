@@ -13,7 +13,9 @@ const PORT = process.env.PORT || 3000;
 // Security: Persistent, cryptographically strong secret key
 function getSecretKey() {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  const keyPath = path.join(__dirname, 'database', '.secret_key');
+  const isVercel = Boolean(process.env.VERCEL);
+  const keyDir = isVercel ? '/tmp' : path.join(__dirname, 'database');
+  const keyPath = path.join(keyDir, '.secret_key');
   try {
     if (fs.existsSync(keyPath)) {
       return fs.readFileSync(keyPath, 'utf8').trim();
@@ -1138,9 +1140,13 @@ try {
   console.error('Auto-seed check error:', e.message);
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`=======================================================`);
-  console.log(`  Sistem Inventarisasi Lab Biologi SMANSA Pinrang`);
-  console.log(`  Server aktif di http://0.0.0.0:${PORT}`);
-  console.log(`=======================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`=======================================================`);
+    console.log(`  Sistem Inventarisasi Lab Biologi SMANSA Pinrang`);
+    console.log(`  Server aktif di http://0.0.0.0:${PORT}`);
+    console.log(`=======================================================`);
+  });
+}
+
+module.exports = app;

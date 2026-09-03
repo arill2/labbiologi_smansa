@@ -2,12 +2,26 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('node:path');
 const fs = require('node:fs');
 
-const dbDir = path.join(__dirname, 'database');
+const isVercel = Boolean(process.env.VERCEL);
+const dbDir = isVercel ? '/tmp' : path.join(__dirname, 'database');
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
 const dbPath = path.join(dbDir, 'inventaris_lab_biologi.sqlite');
+
+// On Vercel, copy pre-seeded database to writable /tmp directory if not present
+if (isVercel && !fs.existsSync(dbPath)) {
+  const seedDbPath = path.join(__dirname, 'database', 'inventaris_lab_biologi.sqlite');
+  if (fs.existsSync(seedDbPath)) {
+    try {
+      fs.copyFileSync(seedDbPath, dbPath);
+    } catch (e) {
+      console.error('Failed to copy initial sqlite db to /tmp:', e.message);
+    }
+  }
+}
+
 const db = new DatabaseSync(dbPath);
 
 // Enable foreign keys and WAL mode for high reliability and concurrency
