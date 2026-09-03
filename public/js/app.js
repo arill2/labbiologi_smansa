@@ -163,6 +163,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Mobile Bottom Nav Navigation
+  document.querySelectorAll('.bottom-nav-item').forEach(b => {
+    b.addEventListener('click', () => {
+      const targetTab = b.getAttribute('data-tab');
+      switchTab(targetTab);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Mobile Drawer (Sidebar) Toggle & Backdrop
+  const btnMobileMenu = document.getElementById('btn-mobile-menu');
+  const sidebar = document.querySelector('.sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+  if (btnMobileMenu && sidebar && sidebarBackdrop) {
+    btnMobileMenu.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+      sidebarBackdrop.classList.toggle('open');
+    });
+
+    sidebarBackdrop.addEventListener('click', () => {
+      sidebar.classList.remove('mobile-open');
+      sidebarBackdrop.classList.remove('open');
+    });
+
+    document.querySelectorAll('.sidebar .nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarBackdrop.classList.remove('open');
+      });
+    });
+  }
+
   function switchTab(tabId) {
     state.activeTab = tabId;
     navItems.forEach(n => {
@@ -170,6 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
         n.classList.add('active');
       } else {
         n.classList.remove('active');
+      }
+    });
+
+    document.querySelectorAll('.bottom-nav-item').forEach(b => {
+      if (b.getAttribute('data-tab') === tabId) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
       }
     });
 

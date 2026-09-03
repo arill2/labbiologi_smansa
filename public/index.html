@@ -125,12 +125,24 @@
       </div>
     </aside>
 
+    <!-- SIDEBAR BACKDROP FOR MOBILE -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- MAIN WRAPPER -->
     <div class="main-wrapper">
       <!-- TOPBAR -->
       <header class="topbar">
-        <div class="topbar-title">
-          <h2 id="page-heading">Dashboard & Riwayat Aktivitas</h2>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="btn-icon mobile-menu-btn" id="btn-mobile-menu" title="Menu Navigasi" aria-label="Buka Menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-title">
+            <h2 id="page-heading">Dashboard & Riwayat Aktivitas</h2>
+          </div>
         </div>
         <div class="topbar-actions">
           <button class="theme-toggle" id="theme-toggle" title="Ganti Tema">
@@ -519,6 +531,47 @@
 
       </main>
     </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <button class="bottom-nav-item active" data-tab="tab-home" id="bnav-home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>Dashboard</span>
+      </button>
+
+      <button class="bottom-nav-item" data-tab="tab-inventaris" id="bnav-inventaris">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        <span>Inventaris</span>
+      </button>
+
+      <button class="bottom-nav-item" data-tab="tab-peminjaman" id="bnav-peminjaman">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <span>Peminjaman</span>
+      </button>
+
+      <button class="bottom-nav-item" data-tab="tab-logs" id="bnav-logs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span>Riwayat</span>
+      </button>
+    </nav>
   </div>
 
   <!-- ============================================ -->
