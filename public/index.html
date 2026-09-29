@@ -37,11 +37,6 @@
           Masuk ke Sistem
         </button>
       </form>
-
-      <div style="margin-top: 20px; padding: 12px; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-        <strong>Akun Default Admin:</strong><br>
-        Username: <code>admin</code> &bull; Password: <code>adminlab123</code>
-      </div>
     </div>
   </div>
 
@@ -132,7 +127,7 @@
     <div class="main-wrapper">
       <!-- TOPBAR -->
       <header class="topbar">
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="topbar-left">
           <button class="btn-icon mobile-menu-btn" id="btn-mobile-menu" title="Menu Navigasi" aria-label="Buka Menu">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="3" y1="12" x2="21" y2="12"/>
@@ -264,7 +259,7 @@
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" id="filter-log-search" class="search-input" placeholder="Cari aktivitas, barang, atau nama peminjam...">
+                <input type="text" id="filter-log-search" class="search-input" placeholder="Cari aktivitas, barang, atau nama peminjam..." aria-label="Cari aktivitas, barang, atau nama peminjam">
               </div>
 
               <select id="filter-log-jenis" class="select-control">
@@ -331,7 +326,7 @@
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" id="filter-barang-search" class="search-input" placeholder="Cari nama peralatan, kode, spesifikasi, atau lokasi...">
+                <input type="text" id="filter-barang-search" class="search-input" placeholder="Cari nama peralatan, kode, spesifikasi, atau lokasi..." aria-label="Cari nama peralatan, kode, spesifikasi, atau lokasi">
               </div>
 
               <select id="filter-barang-kategori" class="select-control">
@@ -430,7 +425,7 @@
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" id="filter-pinjam-search" class="search-input" placeholder="Cari nama peminjam, nama alat, formulir, atau keperluan praktikum...">
+                <input type="text" id="filter-pinjam-search" class="search-input" placeholder="Cari nama peminjam, nama alat, formulir, atau keperluan praktikum..." aria-label="Cari nama peminjam, nama alat, formulir, atau keperluan praktikum">
               </div>
             </div>
 
@@ -481,7 +476,7 @@
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" id="audit-log-search" class="search-input" placeholder="Cari aktivitas...">
+                <input type="text" id="audit-log-search" class="search-input" placeholder="Cari aktivitas..." aria-label="Cari aktivitas">
               </div>
 
               <select id="audit-log-jenis" class="select-control">
@@ -494,11 +489,11 @@
                 <option value="import_csv">Import CSV</option>
               </select>
 
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Dari:</span>
-                <input type="date" id="audit-log-start" class="form-input" style="padding: 8px;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Sampai:</span>
-                <input type="date" id="audit-log-end" class="form-input" style="padding: 8px;">
+              <div class="filter-date-range">
+                <span class="filter-date-label">Dari:</span>
+                <input type="date" id="audit-log-start" class="form-input date-filter-input" aria-label="Tanggal mulai filter log">
+                <span class="filter-date-label">Sampai:</span>
+                <input type="date" id="audit-log-end" class="form-input date-filter-input" aria-label="Tanggal akhir filter log">
               </div>
             </div>
 
@@ -519,9 +514,9 @@
               </table>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+            <div class="audit-pagination">
               <span id="audit-pagination-info" style="font-size: 0.85rem; color: var(--text-muted);">Menampilkan halaman 1</span>
-              <div style="display: flex; gap: 8px;">
+              <div class="audit-pagination-actions">
                 <button class="btn btn-secondary btn-sm" id="btn-audit-prev">Sebelumnya</button>
                 <button class="btn btn-secondary btn-sm" id="btn-audit-next">Selanjutnya</button>
               </div>
@@ -580,10 +575,10 @@
 
   <!-- MODAL: TAMBAH / EDIT BARANG -->
   <div class="modal-backdrop" id="modal-barang">
-    <div class="modal-dialog">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-barang-title">
       <div class="modal-header">
         <h3 id="modal-barang-title">Tambah Barang Inventaris</h3>
-        <button class="btn-icon" data-close-modal>✕</button>
+        <button class="btn-icon" data-close-modal aria-label="Tutup dialog">✕</button>
       </div>
       <form id="form-barang">
         <div class="modal-body">
@@ -666,10 +661,10 @@
 
   <!-- MODAL: PEMINJAMAN BARU -->
   <div class="modal-backdrop" id="modal-pinjam">
-    <div class="modal-dialog">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pinjam-title">
       <div class="modal-header">
-        <h3>Formulir Peminjaman Alat Lab Biologi</h3>
-        <button class="btn-icon" data-close-modal>✕</button>
+        <h3 id="modal-pinjam-title">Formulir Peminjaman Alat Lab Biologi</h3>
+        <button class="btn-icon" data-close-modal aria-label="Tutup dialog">✕</button>
       </div>
       <form id="form-pinjam">
         <div class="modal-body">
@@ -727,10 +722,10 @@
 
   <!-- MODAL: PENGEMBALIAN BARANG -->
   <div class="modal-backdrop" id="modal-kembalikan">
-    <div class="modal-dialog">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-kembalikan-title">
       <div class="modal-header">
-        <h3>Konfirmasi Pengembalian Alat</h3>
-        <button class="btn-icon" data-close-modal>✕</button>
+        <h3 id="modal-kembalikan-title">Konfirmasi Pengembalian Alat</h3>
+        <button class="btn-icon" data-close-modal aria-label="Tutup dialog">✕</button>
       </div>
       <form id="form-kembalikan">
         <input type="hidden" id="kembali-peminjaman-id">
@@ -795,10 +790,10 @@
 
   <!-- MODAL: IMPORT CSV WITH PREVIEW -->
   <div class="modal-backdrop" id="modal-import">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg" role="dialog" aria-modal="true" aria-labelledby="modal-import-title">
       <div class="modal-header">
-        <h3>Import Inventaris via Berkas CSV</h3>
-        <button class="btn-icon" data-close-modal>✕</button>
+        <h3 id="modal-import-title">Import Inventaris via Berkas CSV</h3>
+        <button class="btn-icon" data-close-modal aria-label="Tutup dialog">✕</button>
       </div>
       <div class="modal-body">
         <div id="import-dropzone" class="dropzone">
@@ -809,7 +804,7 @@
           </svg>
           <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 4px;">Pilih atau Tarik Berkas CSV ke Sini</h4>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Mendukung format resmi SMANSA Pinrang atau format standar CSV inventaris</p>
-          <input type="file" id="import-csv-file" accept=".csv" style="display: none;">
+          <input type="file" id="import-csv-file" accept=".csv" style="display: none;" aria-label="Pilih berkas CSV untuk diimpor">
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('import-csv-file').click()">
             Pilih File CSV
           </button>
@@ -852,10 +847,10 @@
 
   <!-- MODAL: GANTI PASSWORD -->
   <div class="modal-backdrop" id="modal-password">
-    <div class="modal-dialog" style="max-width: 440px;">
+    <div class="modal-dialog" style="max-width: 440px;" role="dialog" aria-modal="true" aria-labelledby="modal-password-title">
       <div class="modal-header">
-        <h3>Ubah Password Admin</h3>
-        <button class="btn-icon" data-close-modal>✕</button>
+        <h3 id="modal-password-title">Ubah Password Admin</h3>
+        <button class="btn-icon" data-close-modal aria-label="Tutup dialog">✕</button>
       </div>
       <form id="form-change-password">
         <div class="modal-body">

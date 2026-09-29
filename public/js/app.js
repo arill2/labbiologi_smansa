@@ -177,24 +177,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.querySelector('.sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
+  // Sidebar is off-canvas below 1024px. When it is closed there, it must be
+  // removed from the tab order (inert) so keyboard users do not land on
+  // invisible controls.
+  const mobileNavQuery = window.matchMedia('(max-width: 1024px)');
+
+  function syncSidebarInert() {
+    if (!sidebar) return;
+    const hidden = mobileNavQuery.matches && !sidebar.classList.contains('mobile-open');
+    sidebar.inert = hidden;
+    if (hidden) {
+      sidebar.setAttribute('aria-hidden', 'true');
+    } else {
+      sidebar.removeAttribute('aria-hidden');
+    }
+  }
+
+  function setSidebarOpen(open) {
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-open', open);
+    sidebarBackdrop.classList.toggle('open', open);
+    syncSidebarInert();
+  }
+
   if (btnMobileMenu && sidebar && sidebarBackdrop) {
     btnMobileMenu.addEventListener('click', () => {
-      sidebar.classList.toggle('mobile-open');
-      sidebarBackdrop.classList.toggle('open');
+      setSidebarOpen(!sidebar.classList.contains('mobile-open'));
     });
 
-    sidebarBackdrop.addEventListener('click', () => {
-      sidebar.classList.remove('mobile-open');
-      sidebarBackdrop.classList.remove('open');
-    });
+    sidebarBackdrop.addEventListener('click', () => setSidebarOpen(false));
 
     document.querySelectorAll('.sidebar .nav-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        sidebar.classList.remove('mobile-open');
-        sidebarBackdrop.classList.remove('open');
-      });
+      btn.addEventListener('click', () => setSidebarOpen(false));
     });
   }
+
+  syncSidebarInert();
+  mobileNavQuery.addEventListener('change', syncSidebarInert);
 
   function switchTab(tabId) {
     state.activeTab = tabId;
@@ -243,9 +262,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // DASHBOARD FUNCTIONS
   // -------------------------------------------------------------
   async function loadDashboardStats() {
+    const statIds = ['stat-total-jenis', 'stat-stok-tersedia', 'stat-total-dipinjam', 'stat-stok-rusak'];
+    statIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '...';
+    });
     try {
       const res = await fetch('/api/dashboard/stats');
-      if (!res.ok) return;
+      if (!res.ok) {
+        statIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '-';
+        });
+        return;
+      }
       const data = await res.json();
 
       document.getElementById('stat-total-jenis').textContent = data.total_jenis || 0;
@@ -258,12 +288,19 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('badge-total-pinjam').textContent = data.total_dipinjam || 0;
     } catch (e) {
       console.error(e);
+      statIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '-';
+      });
     }
   }
 
   async function loadDashboardLogs() {
     const search = document.getElementById('filter-log-search').value.trim();
     const jenis = document.getElementById('filter-log-jenis').value;
+
+    const container = document.getElementById('dashboard-log-list');
+    setListLoading(container);
 
     try {
       const url = new URL('/api/logs', window.location.origin);
@@ -272,11 +309,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (jenis && jenis !== 'semua') url.searchParams.set('jenis', jenis);
 
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setListError(container, loadDashboardLogs);
+        return;
+      }
       const data = await res.json();
       renderDashboardLogs(data.logs || []);
     } catch (e) {
       console.error(e);
+      setListError(container, loadDashboardLogs);
     }
   }
 
@@ -395,6 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const kondisi = document.getElementById('filter-barang-kondisi').value;
     const stokMenipis = document.getElementById('filter-barang-stok-menipis').checked;
 
+    const tbody = document.getElementById('table-barang-body');
+    const emptyState = document.getElementById('barang-empty-state');
+    if (emptyState) emptyState.style.display = 'none';
+    setTableLoading(tbody, 10);
+
     try {
       const url = new URL('/api/barang', window.location.origin);
       if (search) url.searchParams.set('search', search);
@@ -403,12 +449,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (stokMenipis) url.searchParams.set('stok_menipis', 'true');
 
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setTableError(tbody, 10, loadBarangList);
+        return;
+      }
       const items = await res.json();
       state.barangList = items;
       renderBarangTable(items);
     } catch (e) {
       console.error(e);
+      setTableError(tbody, 10, loadBarangList);
     }
   }
 
@@ -758,18 +808,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const search = document.getElementById('filter-pinjam-search').value.trim();
     const status = state.currentPinjamSubtab;
 
+    const tbody = document.getElementById('table-peminjaman-body');
+    const emptyState = document.getElementById('pinjam-empty-state');
+    if (emptyState) emptyState.style.display = 'none';
+    setTableLoading(tbody, 9);
+
     try {
       const url = new URL('/api/peminjaman', window.location.origin);
       if (status && status !== 'semua') url.searchParams.set('status', status);
       if (search) url.searchParams.set('search', search);
 
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setTableError(tbody, 9, loadPeminjamanList);
+        return;
+      }
       const rows = await res.json();
       state.peminjamanList = rows;
       renderPeminjamanTable(rows);
     } catch (e) {
       console.error(e);
+      setTableError(tbody, 9, loadPeminjamanList);
     }
   }
 
@@ -931,7 +990,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (row && row.tanggal_rencana_kembali && returnDate && returnDate < row.tanggal_rencana_kembali) {
       earlyAlert.style.display = 'flex';
-      earlyText.innerHTML = `<strong>⚡ Pengembalian Lebih Awal:</strong> Batas pengembalian adalah <strong>${row.tanggal_rencana_kembali}</strong>. Alat dikembalikan lebih awal pada <strong>${returnDate}</strong>.`;
+      earlyText.innerHTML = `<strong>Pengembalian Lebih Awal:</strong> Batas pengembalian adalah <strong>${row.tanggal_rencana_kembali}</strong>. Alat dikembalikan lebih awal pada <strong>${returnDate}</strong>.`;
       if (!catatanInput.value || catatanInput.value === 'Dikembalikan tepat waktu') {
         catatanInput.value = 'Dikembalikan lebih awal';
       }
@@ -946,11 +1005,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupKembalikanForLoan(row) {
     document.getElementById('kembali-peminjaman-id').value = row.id;
     document.getElementById('kembali-info-peminjam').textContent = `${row.nama_peminjam} (${row.kelas_jabatan || 'Umum'})`;
-    document.getElementById('kembali-info-alat').textContent = `Alat: ${row.nama_barang} ${row.barang_spesifikasi ? '(' + row.barang_spesifikasi + ')' : ''} — Dipinjam: ${row.jumlah} ${row.barang_satuan || 'Unit'}`;
+    document.getElementById('kembali-info-alat').textContent = `Alat: ${row.nama_barang} ${row.barang_spesifikasi ? '(' + row.barang_spesifikasi + ')' : ''} \u2022 Dipinjam: ${row.jumlah} ${row.barang_satuan || 'Unit'}`;
 
     const infoJadwal = document.getElementById('kembali-info-jadwal');
     if (infoJadwal) {
-      infoJadwal.textContent = `📅 Tanggal Pinjam: ${row.tanggal_pinjam} | Batas Rencana Kembali: ${row.tanggal_rencana_kembali || 'Tidak ada batas waktu'}`;
+      infoJadwal.textContent = `Tanggal Pinjam: ${row.tanggal_pinjam} | Batas Rencana Kembali: ${row.tanggal_rencana_kembali || 'Tidak ada batas waktu'}`;
     }
 
     document.getElementById('kembali-jumlah').value = row.jumlah;
@@ -1057,6 +1116,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const startDate = document.getElementById('audit-log-start').value;
     const endDate = document.getElementById('audit-log-end').value;
 
+    const tbody = document.getElementById('table-audit-body');
+    const pageInfo = document.getElementById('audit-pagination-info');
+    setTableLoading(tbody, 5);
+    if (pageInfo) pageInfo.textContent = 'Memuat data...';
+
     try {
       const url = new URL('/api/logs', window.location.origin);
       url.searchParams.set('page', state.auditPage);
@@ -1067,11 +1131,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (endDate) url.searchParams.set('end_date', endDate);
 
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setTableError(tbody, 5, loadAuditLogs);
+        if (pageInfo) pageInfo.textContent = 'Gagal memuat data';
+        return;
+      }
       const data = await res.json();
       renderAuditTable(data);
     } catch (e) {
       console.error(e);
+      setTableError(tbody, 5, loadAuditLogs);
+      if (pageInfo) pageInfo.textContent = 'Gagal memuat data';
     }
   }
 
@@ -1181,13 +1251,74 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------------------------------------------
   // MODAL UTILITIES
   // -------------------------------------------------------------
+  let lastFocusedElement = null;
+
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function getOpenModal() {
+    const modals = document.querySelectorAll('.modal-backdrop.open');
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getFocusable(modal) {
+    return [...modal.querySelectorAll(FOCUSABLE)].filter(el => el.getClientRects().length > 0);
+  }
+
   function openModal(modal) {
+    if (!getOpenModal()) lastFocusedElement = document.activeElement;
     modal.classList.add('open');
+    document.body.classList.add('modal-open');
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog && !dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
+    // Defer focus one frame: the dialog is still visibility:hidden in the
+    // same task the open class is applied, so focus() would be ignored.
+    requestAnimationFrame(() => {
+      const target = dialog || getFocusable(modal)[0];
+      if (target) target.focus();
+    });
   }
 
   function closeModal(modal) {
     modal.classList.remove('open');
+    if (!document.querySelector('.modal-backdrop.open')) {
+      document.body.classList.remove('modal-open');
+      if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+      }
+      lastFocusedElement = null;
+    }
   }
+
+  document.addEventListener('keydown', (e) => {
+    const openModalEl = getOpenModal();
+    if (!openModalEl) return;
+
+    if (e.key === 'Escape') {
+      closeModal(openModalEl);
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      const focusables = getFocusable(openModalEl);
+      if (!focusables.length) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      const insideRing = focusables.includes(active);
+      if (e.shiftKey) {
+        if (!insideRing || active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (!insideRing || active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
 
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1211,6 +1342,35 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  // Loading / error states for data views (R-27)
+  function setTableLoading(tbody, colSpan, label = 'Memuat data...') {
+    if (!tbody) return;
+    tbody.innerHTML = `<tr class="table-state-row"><td colspan="${colSpan}"><span class="table-state" role="status"><span class="spinner" aria-hidden="true"></span>${escapeHtml(label)}</span></td></tr>`;
+  }
+
+  function setTableError(tbody, colSpan, onRetry) {
+    if (!tbody) return;
+    tbody.innerHTML = `<tr class="table-state-row"><td colspan="${colSpan}"><span class="table-state table-state-error" role="alert">Gagal memuat data. <button type="button" class="btn btn-secondary btn-sm" data-retry>Coba lagi</button></span></td></tr>`;
+    const retryBtn = tbody.querySelector('[data-retry]');
+    if (retryBtn && typeof onRetry === 'function') {
+      retryBtn.addEventListener('click', onRetry);
+    }
+  }
+
+  function setListLoading(container, label = 'Memuat data...') {
+    if (!container) return;
+    container.innerHTML = `<div class="table-state" role="status" style="padding: 30px; text-align: center;"><span class="spinner" aria-hidden="true"></span>${escapeHtml(label)}</div>`;
+  }
+
+  function setListError(container, onRetry) {
+    if (!container) return;
+    container.innerHTML = `<div class="table-state table-state-error" role="alert" style="padding: 30px; text-align: center;">Gagal memuat data. <button type="button" class="btn btn-secondary btn-sm" data-retry>Coba lagi</button></div>`;
+    const retryBtn = container.querySelector('[data-retry]');
+    if (retryBtn && typeof onRetry === 'function') {
+      retryBtn.addEventListener('click', onRetry);
+    }
   }
 
   function debounce(func, wait) {
